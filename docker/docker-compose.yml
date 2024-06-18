@@ -1,0 +1,25 @@
+services:
+  pocketbase:
+    image: 'ghcr.io/oilik/pocketbase-starter:latest'
+    container_name: pocketbase-starter
+    environment:
+      - POCKETBASE_ADMIN_EMAIL=admin@example.com #This is the default if you don't set it or this value is removed
+      - POCKETBASE_ADMIN_PASSWORD=1234567890 #This is the default if you don't set it or this value is removed
+    restart: unless-stopped  
+    volumes:
+      - 'pb_data:/app/pb_data'
+      - 'pb_migrations:/app/pb_migrations'
+      # - pb_hooks:/app/pb_hooks
+      # - public:/app/pb_public
+    ports:
+      - '8090:8090'
+    labels:
+      - coolify.starter=true
+      - coolify.type=web
+      - coolify.port=8090
+      - coolify.application=pocketbase
+
+volumes:
+  pb-data:
+  pb-migrations:
+

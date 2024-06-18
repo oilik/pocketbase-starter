@@ -1,0 +1,47 @@
+# Ignore node_modules
+node_modules
+npm-debug.log
+
+# Ignore frontend build files if not needed in the container
+/dist
+
+# Ignore logs
+*.log
+
+# Ignore OS files
+.DS_Store
+Thumbs.db
+
+# Ignore environment files
+.env
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+
+# Ignore IDE and editor config files
+.vscode/
+.idea/
+*.sublime-project
+*.sublime-workspace
+
+# Ignore Docker related files
+Dockerfile
+docker-compose.yml
+
+# Ignore test and coverage files
+/coverage
+/tests
+/__tests__
+/__mocks__
+/__snapshots__
+
+# Ignore PocketBase generated files
+pb_data/
+
+# Ignore temporary files
+*.tmp
+*.swp
+*.bak
+*.orig
+*.patch
