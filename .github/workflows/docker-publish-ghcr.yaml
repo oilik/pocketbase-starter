@@ -13,9 +13,31 @@ jobs:
   build_and_publish:
     runs-on: ubuntu-latest
     steps:
+      # Checkout the repository
       - name: Checkout repository
         uses: actions/checkout@v3
 
+      # Check if the push is a tag
+      - name: Check for tag
+        id: get_ref
+        run: |
+          if [[ "${GITHUB_REF_TYPE}" == "tag" ]]; then
+            echo "::set-output name=IS_TAG::true"
+          else
+            echo "::set-output name=IS_TAG::false"
+          fi
+
+      # Stop workflow if not a tag push
+      - name: Exit if not a tag
+        if: steps.get_ref.outputs.IS_TAG != 'true'
+        run: echo "This is not a tag push. Exiting."
+
+      # Extract the version from the tag
+      - name: Extract version from tag
+        id: extract_version
+        run: echo "::set-output name=VERSION::${GITHUB_REF#refs/tags/}"
+
+      # Login to GitHub Container Registry
       - name: Login to GitHub Container Registry
         uses: docker/login-action@v2
         with:
@@ -23,9 +45,12 @@ jobs:
           username: ${{ github.repository_owner }}
           password: ${{ secrets.GHCR_PAT }}
 
+      # Build and push Docker image with semantic versioning
       - name: Build and push Docker image
         uses: docker/build-push-action@v3
         with:
           context: .
           push: true
-          tags: ghcr.io/${{ github.repository_owner }}/pocketbase-starter:latest
+          tags: |
+            ghcr.io/${{ github.repository_owner }}/pocketbase-starter:latest
+            ghcr.io/${{ github.repository_owner }}/pocketbase-starter:${{ steps.extract_version.outputs.VERSION }}
