@@ -23,32 +23,24 @@ jobs:
           username: ${{ github.repository_owner }}
           password: ${{ secrets.GHCR_PAT }}
 
-      - name: Get latest tag
-        id: get_tag
-        run: |
-          LATEST_TAG=$(curl -s https://ghcr.io/v2/${{ github.repository_owner }}/pocketbase-starter/tags/list | jq -r '.tags | map(select(test("^v[0-9]+\\.[0-9]+\\.[0-9]+$"))) | sort | last')
-          echo "LATEST_TAG=$LATEST_TAG" >> $GITHUB_ENV
+      - name: Create an incremental tag
+        id: tag
+        uses: aurestic/incremental-tag@1.0.8
+        with:
+          prev_tag: 'v'
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Increment version
-        id: increment_version
-        run: |
-          if [ -z "${{ env.LATEST_TAG }}" ]; then
-            NEW_VERSION="v1.0.0"
-          else
-            IFS='.' read -r -a vers <<< "${{ env.LATEST_TAG#v }}"
-            major=${vers[0]}
-            minor=${vers[1]}
-            patch=${vers[2]}
-            patch=$((patch + 1))
-            NEW_VERSION="v$major.$minor.$patch"
-          fi
-          echo "NEW_VERSION=$NEW_VERSION" >> $GITHUB_ENV
+      - name: Generate Docker metadata
+        id: meta
+        uses: docker/metadata-action@v3
+        with:
+          images: ghcr.io/${{ github.repository_owner }}/pocketbase-starter
+          tags: ${{ steps.tag.outputs.new_tag }}
 
       - name: Build and push Docker images
         uses: docker/build-push-action@v3
         with:
           context: .
           push: true
-          tags: |
-            ghcr.io/${{ github.repository_owner }}/pocketbase-starter:latest
-            ghcr.io/${{ github.repository_owner }}/pocketbase-starter:${{ env.NEW_VERSION }}
+          tags: ${{ steps.meta.outputs.tags }}
