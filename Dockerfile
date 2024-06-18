@@ -10,12 +10,12 @@ RUN apk add --no-cache git ca-certificates
 # Clone PocketBase repository and your custom code
 RUN git clone https://github.com/oilik/pocketbase-starter.git /app
 
-
 # Set environment variables for the build process, CGO disabled for static linking
 RUN go env -w GO111MODULE=on CGO_ENABLED=0
 
 # Build the PocketBase executable
 RUN go build -o pocketbase .
+
 
 
 # Final stage
