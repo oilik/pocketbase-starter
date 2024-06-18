@@ -16,6 +16,10 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v3
 
+      - name: Set up version
+        id: version
+        run: echo "VERSION=$(date +'%Y%m%d%H%M%S')" >> $GITHUB_ENV
+
       - name: Login to GitHub Container Registry
         uses: docker/login-action@v2
         with:
@@ -23,24 +27,11 @@ jobs:
           username: ${{ github.repository_owner }}
           password: ${{ secrets.GHCR_PAT }}
 
-      - name: Create an incremental tag
-        id: tag
-        uses: aurestic/incremental-tag@1.0.8
-        with:
-          prev_tag: 'v'
-        env:
-          GITHUB_TOKEN: ${{ secrets.GHCR_PAT }}
-
-      - name: Generate Docker metadata
-        id: meta
-        uses: docker/metadata-action@v3
-        with:
-          images: ghcr.io/${{ github.repository_owner }}/pocketbase-starter
-          tags: ${{ steps.tag.outputs.new_tag }}
-
-      - name: Build and push Docker images
+      - name: Build and push Docker image
         uses: docker/build-push-action@v3
         with:
           context: .
           push: true
-          tags: ${{ steps.meta.outputs.tags }}
+          tags: |
+            ghcr.io/${{ github.repository_owner }}/pocketbase-starter:latest
+            ghcr.io/${{ github.repository_owner }}/pocketbase-starter:${{ env.VERSION }}
